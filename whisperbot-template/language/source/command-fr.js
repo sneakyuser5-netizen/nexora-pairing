@@ -1,4 +1,8 @@
 module.exports = {
+"facebook": "Télécharger une vidéo Facebook",
+"tiktok": "Télécharger une vidéo TikTok",
+"sticker": "Télécharger un pack de stickers Telegram",
+"play": "Rechercher et télécharger un audio autorisé",
 "block": "Bloquer un utilisateur WhatsApp",
 "unblock": "Débloquer un utilisateur WhatsApp",
 "tag": "Activer ou désactiver la réponse audio aux mentions du propriétaire",

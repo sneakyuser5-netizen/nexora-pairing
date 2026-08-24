@@ -1,3 +1,4 @@
+const { t } = require("./lib/lang");
 const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = require("@whiskeysockets/baileys");
 const pino = require("pino");
 const fs = require("fs");
@@ -112,57 +113,38 @@ sock.ev.on("messages.upsert", async ({ messages, type }) => {
         loadCommands();
         loadEvents();
 
+
         sock.ev.on("connection.update", async (update) => {
-            const {
-                connection,
-                lastDisconnect
-            } = update;
+            const { connection, lastDisconnect } = update;
 
-            /*
-             * =========================
-             * CONNECTION OPEN
-             * =========================
-             */
             if (connection === "open") {
-
+                
                 const owner =
-                    sock.user.id.split(":")[0];
+    sock.user.id.split(":")[0];
 
-                const ownerDB =
-                    require("./lib/owner");
+const ownerDB =
+    require("./lib/owner");
 
-                const data =
-                    ownerDB.get();
+const data = ownerDB.get();
 
-                if (
-                    !data ||
-                    data.botOwner !== owner
-                ) {
-                    ownerDB.set(owner);
-                    setup.clearPhone();
-                }
+if (!data || data.botOwner !== owner) {
 
-                const info =
-                    ownerDB.get();
+    ownerDB.set(owner);
+    setup.clearPhone();
 
-                /*
-                 * Send the welcome message only
-                 * the first time this WhatsApp
-                 * account connects.
-                 */
-                if (!info.welcomed) {
+}
+                const info = ownerDB.get();
 
-                    try {
+if (!info.welcomed) {
 
-                        await sock.sendMessage(
-                            owner + "@s.whatsapp.net",
-                            {
-                                image:
-                                    fs.readFileSync(
-                                        "./assets/welcome.png"
-                                    ),
+    try {
 
-                                caption:
+        await sock.sendMessage(
+            owner + "@s.whatsapp.net",
+            {
+                image: fs.readFileSync("./assets/welcome.png"),
+
+                caption:
 `━━━━━━━━━━━━━━━
 🤖 *WhisperBot*
 
@@ -189,49 +171,46 @@ Enjoy your new assistant!
 
 Made with ❤️ by
 *THE-WHISPERER-237*`
-                            }
-                        );
+            }
+        );
 
-                        ownerDB.welcomed();
+        ownerDB.welcomed();
 
-                    } catch (err) {
+        
 
-                        console.error(
-                            "Welcome message error:",
-                            err
-                        );
+    } catch (err) {
 
-                    }
-                }
+        
 
-                const number =
-                    sock.user.id.split(":")[0];
+    }
 
-                const uptime = () => {
+}
 
-                    const seconds =
-                        Math.floor(
-                            (Date.now() - START_TIME) /
-                            1000
-                        );
 
-                    const hours =
-                        Math.floor(
-                            seconds / 3600
-                        );
+    const number =
+        sock.user.id.split(":")[0];
 
-                    const minutes =
-                        Math.floor(
-                            (seconds % 3600) / 60
-                        );
 
-                    const secs =
-                        seconds % 60;
+    const uptime = () => {
 
-                    return `${hours}h ${minutes}m ${secs}s`;
-                };
+        const seconds =
+            Math.floor((Date.now() - START_TIME) / 1000);
 
-                console.log(`
+        const hours =
+            Math.floor(seconds / 3600);
+
+        const minutes =
+            Math.floor((seconds % 3600) / 60);
+
+        const secs =
+            seconds % 60;
+
+        return `${hours}h ${minutes}m ${secs}s`;
+
+    };
+
+
+    console.log(`
 ╔════════════════════════════════╗
 ║        🤖 BOT ONLINE           ║
 ╠════════════════════════════════╣
@@ -250,128 +229,20 @@ Made with ❤️ by
 ║ ⏱️ UPTIME:
 ║ ${uptime()}
 ╚════════════════════════════════╝
-                `);
+    `);
+
             }
 
-            /*
-             * =========================
-             * CONNECTION CLOSED
-             * =========================
-             */
             if (connection === "close") {
+                const statusCode = lastDisconnect?.error?.output?.statusCode;
 
-                const statusCode =
-                    lastDisconnect
-                        ?.error
-                        ?.output
-                        ?.statusCode;
+                console.log("❌ Connection closed. Code:", statusCode);
 
-                console.log(
-                    "❌ Connection closed. Code:",
-                    statusCode
-                );
-
-                /*
-                 * 401 / loggedOut means the
-                 * WhatsApp account deliberately
-                 * logged this device out.
-                 *
-                 * NEVER reconnect in this case.
-                 */
-                if (
-                    statusCode ===
-                    DisconnectReason.loggedOut
-                ) {
-
-                    console.log(
-                        "🧹 WhatsApp logged out. Stopping WhisperBot instance."
-                    );
-
-                    /*
-                     * Delete this instance's
-                     * authentication state so
-                     * the next /pair starts fresh.
-                     */
-                    try {
-
-                        const sessionDir =
-                            process.env
-                                .WHISPERBOT_SESSION_DIR;
-
-                        if (
-                            sessionDir &&
-                            fs.existsSync(sessionDir)
-                        ) {
-
-                            fs.rmSync(
-                                sessionDir,
-                                {
-                                    recursive: true,
-                                    force: true
-                                }
-                            );
-
-                            console.log(
-                                "🧹 Removed WhatsApp authentication session."
-                            );
-                        }
-
-                    } catch (err) {
-
-                        console.error(
-                            "Failed to remove WhatsApp session:",
-                            err
-                        );
-                    }
-/*
- * Tell the parent pairing manager that this
- * was a real WhatsApp logout.
- */
-try {
-    const logoutMarker =
-        path.join(
-            __dirname,
-            ".whisperbot-logged-out"
-        );
-
-    fs.writeFileSync(
-        logoutMarker,
-        "loggedOut\n"
-    );
-
-    console.log(
-        "📝 Created WhatsApp logout marker."
-    );
-
-} catch (err) {
-
-    console.error(
-        "Failed to create WhatsApp logout marker:",
-        err
-    );
-}
-
-/*
- * Exit cleanly.
- *
- * The parent pairing manager will see the
- * logout marker and clear the pairing session.
- */
-process.exit(0);
+                if (statusCode !== DisconnectReason.loggedOut) {
+                    setTimeout(() => startBot(), 3000);
                 }
-
-                /*
-                 * Any other disconnect may be
-                 * temporary, so reconnect.
-                 */
-                setTimeout(
-                    () => startBot(),
-                    3000
-                );
             }
         });
-
-
         sock.ev.on("messages.upsert", async ({ messages }) => {
 
     const msg = messages[0];
@@ -445,33 +316,6 @@ if (
     );
 }
 
-if (afk.has(sender)) {
-
-    const data = afk.get(sender);
-
-    const duration = afk.format(
-        Date.now() - data.time
-    );
-
-    afk.remove(sender);
-
-    await sock.sendMessage(
-        msg.key.remoteJid,
-        {
-            text:
-`🎉 Welcome back!
-
-⏰ You were away for:
-${duration}
-
-📝 Reason:
-${data.reason}
-
-😂 Hope you didn't forget about me 😎`
-        }
-    );
-
-}
 
     const read = require("./lib/read");
 
@@ -510,16 +354,14 @@ if (mentions.length) {
         msg.key.remoteJid,
         {
             text:
-
-`😴 That user is currently AFK.
-
-📝 Reason:
+`${t(msg.key.remoteJid, "owner.afk_user")}
+${t(msg.key.remoteJid, "owner.afk_return_reason")}
 ${data.reason}
 
-⏰ Away for:
+${t(msg.key.remoteJid, "owner.afk_user_away")}
 ${duration}
 
-😂 They're probably hiding from responsibilities.`,
+${t(msg.key.remoteJid, "owner.afk_user_footer")}`
             
         }
     );

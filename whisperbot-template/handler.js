@@ -151,6 +151,47 @@ async function handleMessage(sock, msg) {
         body = prefix + body.slice(prefix.length + 1);
     }
 
+    // ==========================================
+    // AFK RETURN HANDLER
+    // ==========================================
+
+    const afk = require("./lib/afk");
+
+    // A command beginning with .afk must NEVER
+    // trigger the welcome-back handler.
+    const commandText = body.slice(prefix.length).trim();
+    const commandName = commandText.split(/\s+/)[0].toLowerCase();
+
+    const isAfkCommand =
+        body.startsWith(prefix) &&
+        commandName === "afk";
+
+    if (!body.startsWith(prefix) && afk.has(senderId)) {
+
+        const data = afk.get(senderId);
+
+        if (data) {
+            const duration = afk.format(
+                Date.now() - data.time
+            );
+
+            afk.remove(senderId);
+
+            await sock.sendMessage(jid, {
+                text:
+`${t(jid, "owner.afk_return")}
+
+${t(jid, "owner.afk_away")}
+${duration}
+
+${t(jid, "owner.afk_return_reason")}
+${data.reason}
+
+${t(jid, "owner.afk_return_footer")}`
+            });
+        }
+    }
+
     // Handle interactive sessions
     if (!body.startsWith(prefix)) {
         const current = session.get(jid);

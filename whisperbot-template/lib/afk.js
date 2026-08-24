@@ -23,7 +23,7 @@ function save(data) {
 
 }
 
-function set(user, reason) {
+function set(user, reason, messageId = null) {
 
     user = identity.normalize(user);
 
@@ -33,7 +33,9 @@ function set(user, reason) {
 
         reason,
 
-        time: Date.now()
+        time: Date.now(),
+
+        messageId
 
     };
 

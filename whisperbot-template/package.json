@@ -5,10 +5,13 @@
   "type": "commonjs",
   "scripts": {
     "start": "node index.js",
+    "setup": "node scripts/setup.js",
+    "check": "node scripts/check-dependencies.js",
     "translate": "node tools/build-language.js",
     "build": "node tools/build-language.js"
   },
   "dependencies": {
+    "@silent-tech-offc/ttdl": "^1.0.0",
     "@vitalets/google-translate-api": "^9.2.1",
     "@whiskeysockets/baileys": "7.0.0-rc14",
     "axios": "^1.19.0",

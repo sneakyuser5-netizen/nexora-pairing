@@ -4,8 +4,9 @@ module.exports = {
     name: "goodbye",
     trigger: "group-participants.update",
 
-    execute: async (sock, update) => {
+execute: async (sock, update) => {
 
+    console.log("GOODBYE EVENT FIRED:", update);
         if (update.action !== "remove") return;
 
         const group = update.id;

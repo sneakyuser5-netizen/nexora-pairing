@@ -1,3 +1,4 @@
+//Runtime command 
 const { t } = require("../../lib/lang");
 
 module.exports = {

@@ -20,19 +20,19 @@ module.exports = {
 
         const reason =
             args.join(" ") ||
-            t("owner.afk_no_reason");
+            t(jid, "owner.afk_no_reason");
 
-        afk.set(sender, reason);
+        afk.set(sender, reason, msg.key.id);
 
         await sock.sendMessage(jid, {
 
             text:
-`${t("owner.afk_set")}
+`${t(jid, "owner.afk_set")}
 
-📝 ${t("owner.reason")}
+📝 ${t(jid, "owner.afk_reason")}
 ${reason}
 
-😂 ${t("owner.afk_footer")}`
+😂 ${t(jid, "owner.afk_footer")}`
 
         });
 

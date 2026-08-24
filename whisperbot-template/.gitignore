@@ -64,3 +64,25 @@ build/
 # - Do NOT ignore README.md or other documentation files — they should stay tracked.
 # - If any of the files above are already tracked in the repository, you must remove them from the index
 #   with 'git rm --cached <path>' and commit; .gitignore only prevents new untracked files from being added.
+telegram_config.py
+telegram_session.session
+telegram_session.session-journal
+telegram_media_test/
+# Python cache
+__pycache__/
+*.pyc
+
+# Telegram test files
+telegram_test/
+
+# Temporary audio tests
+test-audio.mp3
+test-play.mp3
+
+# Telegram credentials/session
+telegram_config.py
+telegram_session.session
+telegram_session.session-journal
+
+# Runtime database
+database/*.json
