@@ -17,6 +17,11 @@ const {
 const {
     syncWhisperBotSource
 } = require("./source-sync");
+const {
+    getTelegramLanguage,
+    setTelegramLanguage,
+    telegramT
+} = require("./language");
 const TELEGRAM_BOT_TOKEN =
     process.env.TELEGRAM_BOT_TOKEN;
 
@@ -435,16 +440,19 @@ function launchWhisperBot(
                     `🧹 Cleared pairing session for +${phone}`
                 );
 
-                try {
+try {
 
-                    await sendTelegramMessage(
-                        chatId,
+    await sendTelegramMessage(
+        chatId,
 
-                        `❌ WhatsApp logged out for +${phone}.\n\n🧹 The old session was cleared. You can now use /pair ${phone} to link it again.`
-                    );
+        telegramT(
+    session.userId,
+    "telegram_logged_out_cleared",
+    { phone }
+)
+    );
 
-                } catch {}
-
+} catch {}
                 return;
             }
 
@@ -607,7 +615,11 @@ async function createWhatsAppSocket(
                             try {
                                 await sendTelegramMessage(
                                     session.chatId,
-                                    `❌ WhatsApp was linked successfully, but WhisperBot could not be started for +${phone}.`
+                                    telegramT(
+    session.userId,
+    "telegram_linked_start_failed",
+    { phone }
+)
                                 );
                             } catch {}
 
@@ -618,7 +630,11 @@ async function createWhatsAppSocket(
                     try {
                         await sendTelegramMessage(
                             session.chatId,
-                            `✅ WhatsApp account +${phone} is linked successfully.\n\n🚀 WhisperBot is now starting on this WhatsApp account.`
+                            telegramT(
+    session.userId,
+    "telegram_linked_success",
+    { phone }
+)
                         );
                     } catch {}
 
@@ -789,7 +805,11 @@ async function createWhatsAppSocket(
                     await sendTelegramMessage(
                         session.chatId,
 
-                        `❌ WhatsApp session for +${phone} was logged out/rejected.\n\n🧹 The old session has been removed. You can now use /pair ${phone} again.`
+                        telegramT(
+    session.userId,
+    "telegram_session_logged_out",
+    { phone }
+)
                     );
 
                 } catch {}
@@ -832,72 +852,65 @@ async function createWhatsAppSocket(
              * /pair request starts completely fresh.
              */
 
-            if (
-                statusCode ===
-                DisconnectReason.loggedOut
-            ) {
-                console.log(
-                    `❌ WhatsApp logged out/rejected +${phone}`
-                );
-
-                session.pairingInvalidated = true;
-
-                // If a WhisperBot process exists for this phone, stop it.
-                const child = botProcesses.get(phone);
-                if (child) {
-                    try {
-                        if (!child.killed) {
-                            child.kill("SIGTERM");
-                        }
-                    } catch (err) {}
-
-                    // Remove from map only if it's the same child reference
-                    if (botProcesses.get(phone) === child) {
-                        botProcesses.delete(phone);
-                    }
-
-                    console.log(
-                        `🛑 Stopped WhisperBot process for +${phone}`
-                    );
-                }
-
-                try {
-                    fs.rmSync(
-                        getSessionDir(phone),
-                        {
-                            recursive: true,
-                            force: true
-                        }
-                    );
-
-                    console.log(
-                        `🧹 Removed stale WhatsApp session for +${phone}`
-                    );
-                } catch (err) {
-                    console.error(
-                        `Failed to remove stale WhatsApp session for +${phone}:`,
-                        err
-                    );
-                }
-
-                sessions.delete(phone);
-
-                try {
-                    // Improved feedback message
-                    await sendTelegramMessage(
-                        session.chatId,
-                        `❌ WhatsApp session for +${phone} was rejected by WhatsApp (likely logged out remotely). I removed the saved session files for this instance and stopped any running WhisperBot process. To link again, run /pair ${phone} and follow the pairing steps.`
-                    );
-                } catch {}
-
-                return;
-            }
+            
 
             /*
              * =========================
              * RESTART REQUIRED
              * =========================
              */
+
+              /*
+               * =========================
+               * PAIRING TIMEOUT
+               * =========================
+               *
+               * 408 / timedOut means the temporary
+               * WhatsApp pairing attempt expired.
+               *
+               * Do not reconnect an expired pairing
+               * socket indefinitely.
+               */
+
+              if (
+                  statusCode ===
+                  DisconnectReason.timedOut
+              ) {
+
+                  console.log(
+                      `⏱️ WhatsApp pairing timed out for +${phone}`
+                  );
+
+                  session.pairingInvalidated =
+                      true;
+
+                  try {
+                      session.sock?.ws?.close();
+                  } catch {}
+
+                  sessions.delete(
+                      phone
+                  );
+
+                  try {
+                      await sendTelegramMessage(
+                          session.chatId,
+
+                          telegramT(
+                              session.userId ||
+                              session.chatId,
+
+                              "telegram_pair_failed",
+
+                              { phone }
+                          )
+                      );
+                  } catch {}
+
+                  return;
+              }
+
+
 
             if (
                 statusCode ===
@@ -1006,7 +1019,11 @@ async function reconnectWhatsApp(
             await sendTelegramMessage(
                 session.chatId,
 
-                `❌ WhatsApp could not complete the connection for +${phone}. Please request a new pairing code.`
+                telegramT(
+    session.userId,
+    "telegram_connection_failed",
+    { phone }
+)
             );
 
         } catch {}
@@ -1094,7 +1111,8 @@ async function reconnectWhatsApp(
 
 async function createPairingSession(
     phone,
-    chatId
+    chatId,
+     userId
 ) {
 
     /*
@@ -1109,7 +1127,11 @@ async function createPairingSession(
         await sendTelegramMessage(
             chatId,
 
-            `⚠️ A WhatsApp pairing session for +${phone} is already active.`
+            telegramT(
+                userId,
+                "telegram_pair_active",
+                { phone }
+            )
         );
 
         return;
@@ -1134,7 +1156,11 @@ async function createPairingSession(
         await sendTelegramMessage(
             chatId,
 
-            `❌ Unable to prepare the WhisperBot instance for +${phone}.`
+            telegramT(
+                userId,
+                "telegram_instance_prepare_failed",
+                { phone }
+            )
         );
 
         return;
@@ -1151,6 +1177,9 @@ async function createPairingSession(
         state: null,
 
         chatId,
+
+
+        userId,
 
         connected: false,
 
@@ -1189,15 +1218,16 @@ pairingInvalidated: false
          * the initial WebSocket.
          */
 
-        await new Promise(
-            resolve =>
-                setTimeout(
-                    resolve,
-                    4000
-                )
-        );
+                /*
+         * Fresh pairing must request the WhatsApp
+         * pairing code without waiting for
+         * connection === "open".
+         *
+         * The connection.update handler will mark
+         * the session connected after pairing succeeds.
+         */
 
-        /*
+/*
          * If the account is already registered,
          * don't request a pairing code.
          *
@@ -1261,7 +1291,11 @@ if (
                 await sendTelegramMessage(
                     chatId,
 
-                    `✅ WhatsApp account +${phone} is already linked and validated.\n\n🚀 WhisperBot is starting using the existing WhatsApp session.`
+                    telegramT(
+                        userId,
+                        "telegram_existing_session",
+                        { phone }
+                    )
                 );
 
                 return;
@@ -1295,62 +1329,76 @@ if (
             try {
                 await sendTelegramMessage(
                     chatId,
-                    `⚠️ The saved WhatsApp session for +${phone} could not be validated (it may have been logged out remotely). I removed the stale session files and will now generate a fresh pairing code. Please run /pair ${phone} again and follow the pairing steps.`
+                    telegramT(
+                          userId,
+                          "telegram_stale_session",
+                          { phone }
+                      )
                 );
             } catch {}
 
             // Continue: do not return — proceed to request a new pairing code.
         }
 
-        /*
-         * =========================
-         * REQUEST PAIRING CODE
-         * =========================
-         */
+/*
+ * =========================
+ * REQUEST PAIRING CODE
+ * =========================
+ *
+ * Fresh pairing must give the WhatsApp socket
+ * a short moment to establish before requesting
+ * the pairing code.
+ *
+ * This matches the working WhisperBot template,
+ * which waits 4 seconds before calling
+ * requestPairingCode().
+ */
 
-        if (
-            !session.pairingRequested
-        ) {
+if (!session.pairingRequested) {
 
-            session.pairingRequested =
-                true;
+    session.pairingRequested = true;
 
-            const code =
-                await sock.requestPairingCode(
-                    phone
-                );
+    await new Promise(
+        resolve => setTimeout(resolve, 4000)
+    );
 
-            session.pairingCodeSent =
-                true;
+    if (session.pairingInvalidated) {
+        return;
+    }
 
-            console.log(
-                "=============================="
-            );
+    const code =
+        await sock.requestPairingCode(
+            phone
+        );
 
-            console.log(
-                `PAIR CODE 👉 ${code}`
-            );
+    session.pairingCodeSent =
+        true;
 
-            console.log(
-                "=============================="
-            );
+    console.log(
+        "=============================="
+    );
 
-            await sendTelegramMessage(
-                chatId,
+    console.log(
+        `PAIR CODE 👉 ${code}`
+    );
 
-                `🔐 WhatsApp Pairing Code
+    console.log(
+        "=============================="
+    );
 
-Number: +${phone}
+    await sendTelegramMessage(
+        chatId,
 
-Code: ${code}
-
-Open WhatsApp → Linked Devices → Link a device → Link with phone number, then enter this code.
-
-⚠️ The code is private. Do not share it.
-
-Note: If your WhatsApp account was logged out manually on your phone, re-login on the phone first and then use this code to pair. If pairing fails, try /pair ${phone} again.`
-            );
-        }
+        telegramT(
+            userId,
+            "telegram_pair_code",
+            {
+                phone,
+                code
+            }
+        )
+    );
+}
 
     } catch (err) {
 
@@ -1368,7 +1416,11 @@ Note: If your WhatsApp account was logged out manually on your phone, re-login o
             await sendTelegramMessage(
                 chatId,
 
-                `❌ Unable to generate a WhatsApp pairing code for +${phone}.`
+                telegramT(
+                      message.from.id,
+                      "telegram_pair_failed",
+                      { phone }
+                  )
             );
 
         } catch {}
@@ -1459,15 +1511,61 @@ async function pollTelegram() {
                 telegramOffset =
                     update.update_id + 1;
 
-                const message =
-                    update.message;
+const callbackQuery =
+    update.callback_query;
 
-                if (
-                    !message?.text
-                ) {
-                    continue;
-                }
+if (callbackQuery) {
 
+    const userId =
+        callbackQuery.from.id;
+
+    const chatId =
+        callbackQuery.message.chat.id;
+
+    const data =
+        callbackQuery.data;
+
+    if (
+        data === "language:en" ||
+        data === "language:fr"
+    ) {
+
+        const language =
+            data.split(":")[1];
+
+        setTelegramLanguage(
+            userId,
+            language
+        );
+
+        await telegram(
+            "answerCallbackQuery",
+            {
+                callback_query_id:
+                    callbackQuery.id
+            }
+        );
+
+        await sendTelegramMessage(
+            chatId,
+            telegramT(
+                userId,
+                "telegram_language_selected"
+            )
+        );
+    }
+
+    continue;
+}
+
+const message =
+    update.message;
+
+if (
+    !message?.text
+) {
+    continue;
+}
                 const chatId =
                     message.chat.id;
 
@@ -1494,38 +1592,36 @@ if (
 
     if (!isMember) {
 
-        await telegram(
-            "sendMessage",
+await telegram(
+    "sendMessage",
+    {
+        chat_id: chatId,
+
+        text:
+            telegramT(
+                message.from.id,
+                "telegram_join_required"
+            ),
+
+        reply_markup:
             {
-                chat_id: chatId,
+                inline_keyboard: [
+                    [
+                        {
+                            text:
+                                telegramT(
+                                    message.from.id,
+                                    "telegram_join_button"
+                                ),
 
-                text:
-                    `🔒 *WhisperBotOfficial membership required*\n\n` +
-                    `You must join our Telegram group before using WhisperBot.\n\n` +
-                    `1️⃣ Join the group using the button below.\n` +
-                    `2️⃣ Return here.\n` +
-                    `3️⃣ Send /pair again.`,
-
-                parse_mode:
-                    "Markdown",
-
-                reply_markup:
-                    {
-                        inline_keyboard: [
-                            [
-                                {
-                                    text:
-                                        "🥷 Join WhisperBotOfficial",
-
-                                    url:
-                                        FORCE_JOIN_LINK
-                                }
-                            ]
-                        ]
-                    }
+                            url:
+                                FORCE_JOIN_LINK
+                        }
+                    ]
+                ]
             }
-        );
-
+    }
+);
         continue;
     }
 }
@@ -1535,29 +1631,45 @@ if (
                  * START
                  * =========================
                  */
+if (
+    text === "/start"
+) {
 
-                if (
-                    text === "/start"
-                ) {
+    await telegram(
+        "sendMessage",
+        {
+            chat_id: chatId,
 
-                    await sendTelegramMessage(
-                        chatId,
+            text: telegramT(
+                message.from.id,
+                "telegram_start"
+            ),
 
-                        `🤖 WhisperBot Pairing
+            reply_markup: {
+                inline_keyboard: [
+                    [
+                        {
+                            text:
+                                "🇬🇧 English",
 
-Use:
+                            callback_data:
+                                "language:en"
+                        },
+                        {
+                            text:
+                                "🇫🇷 Français",
 
-/pair 237XXXXXXXXX
+                            callback_data:
+                                "language:fr"
+                        }
+                    ]
+                ]
+            }
+        }
+    );
 
-Example:
-
-/pair 237672334564
-
-Your WhatsApp account will be linked and a personal WhisperBot instance will start automatically.`
-                    );
-
-                    continue;
-                }
+    continue;
+}
 /*
  * =========================
  * DELETE PAIRING SESSION
@@ -1586,15 +1698,12 @@ if (
     if (!phone) {
 
         await sendTelegramMessage(
-            chatId,
-
-            `📌 Usage:
-
-/deletesession 237XXXXXXXXX
-
-Example:
-/deletesession 237682349827`
-        );
+    chatId,
+    telegramT(
+        message.from.id,
+        "telegram_delete_usage"
+    )
+);
 
         continue;
     }
@@ -1607,13 +1716,13 @@ Example:
         botProcesses.has(phone)
     ) {
 
-        await sendTelegramMessage(
-            chatId,
-
-            `⚠️ WhisperBot is currently running for +${phone}.
-
-The active bot was NOT touched.`
-        );
+       await sendTelegramMessage(
+    chatId,
+    telegramT(
+        message.from.id,
+        "telegram_bot_running"
+    )
+);
 
         continue;
     }
@@ -1691,18 +1800,14 @@ The active bot was NOT touched.`
         `🧹 Pairing session manually deleted for +${phone}`
     );
 
-    await sendTelegramMessage(
-        chatId,
-
-        `✅ Pairing session deleted for +${phone}.
-
-🧹 Old WhatsApp authentication was removed.
-
-You can now request a fresh pairing code with:
-
-/pair ${phone}`
-    );
-
+await sendTelegramMessage(
+    chatId,
+    telegramT(
+        message.from.id,
+        "telegram_session_deleted",
+        { phone }
+    )
+);
     continue;
 }
 
@@ -1730,16 +1835,12 @@ You can now request a fresh pairing code with:
                     if (!phone) {
 
                         await sendTelegramMessage(
-                            chatId,
-
-                            `📌 Usage:
-
-/pair 237XXXXXXXXX
-
-Example:
-
-/pair 237672334564`
-                        );
+    chatId,
+    telegramT(
+        message.from.id,
+        "telegram_pair_usage"
+    )
+);
 
                         continue;
                     }
@@ -1754,10 +1855,13 @@ Example:
                         botProcesses.has(phone)
                     ) {
 
-                        await sendTelegramMessage(
+                                                await sendTelegramMessage(
                             chatId,
-
-                            `ℹ️ WhisperBot is already running for +${phone}.`
+                            telegramT(
+                                message.from.id,
+                                "telegram_bot_already_running",
+                                { phone }
+                            )
                         );
 
                         continue;
@@ -1765,10 +1869,12 @@ Example:
 
                     await sendTelegramMessage(
                         chatId,
-
-                        `⏳ Preparing WhisperBot for +${phone}...\n\nA WhatsApp pairing code will be generated shortly.`
+                        telegramT(
+                            message.from.id,
+                            "telegram_pair_preparing",
+                            { phone }
+                        )
                     );
-
                     /*
                      * Start the pairing process
                      * without blocking Telegram.
@@ -1776,7 +1882,8 @@ Example:
 
                     createPairingSession(
                         phone,
-                        chatId
+                        chatId,
+                          message.from.id
                     ).catch(
                         async err => {
 
@@ -1793,10 +1900,12 @@ Example:
 
                                 await sendTelegramMessage(
                                     chatId,
-
-                                    `❌ Unable to start the WhatsApp pairing session for +${phone}.`
+                                    telegramT(
+                                        message.from.id,
+                                        "telegram_pair_start_failed",
+                                        { phone }
+                                    )
                                 );
-
                             } catch {}
                         }
                     );
