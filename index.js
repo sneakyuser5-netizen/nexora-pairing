@@ -198,6 +198,12 @@ function prepareInstance(phone) {
     if (!fs.existsSync(instanceDir)) {
 
         console.log(
+            `🔄 Syncing latest WhisperBot source before creating +${phone}`
+        );
+
+        syncWhisperBotSource();
+
+        console.log(
             `📦 Creating WhisperBot instance for +${phone}`
         );
 
