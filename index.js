@@ -22,6 +22,13 @@ const {
     setTelegramLanguage,
     telegramT
 } = require("./language");
+
+const {
+    isTelegramApproved,
+    approveTelegramUser,
+    revokeTelegramUser,
+    getApprovedTelegramUsers
+} = require("./telegram-approvals");
 const TELEGRAM_BOT_TOKEN =
     process.env.TELEGRAM_BOT_TOKEN;
 
@@ -1455,6 +1462,9 @@ const FORCE_JOIN_LINK =
  */
 const TELEGRAM_OWNER_ID =
     8522227392;
+
+const TELEGRAM_CONTACT =
+    "@The_whisper237";
 async function isUserInRequiredGroup(
     userId
 ) {
@@ -1817,7 +1827,165 @@ await sendTelegramMessage(
     continue;
 }
 
+                                /*
+                 * =========================
+                 * TELEGRAM ADMIN PANEL
+                 * =========================
+                 *
+                 * Owner-only approval management.
+                 */
+
+                if (
+                    message.chat.type === "private" &&
+                    message.from.id === TELEGRAM_OWNER_ID &&
+                    (
+                        text === "/admin" ||
+                        text.startsWith("/admin ")
+                    )
+                ) {
+                    const parts =
+                        text.split(/\s+/);
+
+                    const action =
+                        parts[1]?.toLowerCase();
+
+                    const targetId =
+                        parts[2];
+
+                    if (!action) {
+                        await sendTelegramMessage(
+                            chatId,
+                            [
+                                "🔐 Telegram Admin Panel",
+                                "",
+                                "/admin approve <telegram_id>",
+                                "/admin remove <telegram_id>",
+                                "/admin list"
+                            ].join("\n")
+                        );
+
+                        continue;
+                    }
+
+                    if (
+                        action === "approve" ||
+                        action === "remove"
+                    ) {
+                        if (
+                            !targetId ||
+                            !/^\d+$/.test(targetId)
+                        ) {
+                            await sendTelegramMessage(
+                                chatId,
+                                "❌ Usage: /admin " +
+                                action +
+                                " <telegram_id>"
+                            );
+
+                            continue;
+                        }
+
+                        if (action === "approve") {
+                            const added =
+                                approveTelegramUser(
+                                    targetId
+                                );
+
+                            await sendTelegramMessage(
+                                chatId,
+                                added
+                                    ? "✅ Telegram ID " +
+                                      targetId +
+                                      " approved."
+                                    : "ℹ️ Telegram ID " +
+                                      targetId +
+                                      " is already approved."
+                            );
+                        } else {
+                            const removed =
+                                revokeTelegramUser(
+                                    targetId
+                                );
+
+                            await sendTelegramMessage(
+                                chatId,
+                                removed
+                                    ? "✅ Telegram ID " +
+                                      targetId +
+                                      " removed."
+                                    : "ℹ️ Telegram ID " +
+                                      targetId +
+                                      " was not approved."
+                            );
+                        }
+
+                        continue;
+                    }
+
+                    if (action === "list") {
+                        const approved =
+                            getApprovedTelegramUsers();
+
+                        if (approved.length === 0) {
+                            await sendTelegramMessage(
+                                chatId,
+                                "📋 No Telegram users are currently approved."
+                            );
+                        } else {
+                            await sendTelegramMessage(
+                                chatId,
+                                "📋 Approved Telegram IDs:\n\n" +
+                                approved
+                                    .map(
+                                        (id, index) =>
+                                            `${index + 1}. ${id}`
+                                    )
+                                    .join("\n")
+                            );
+                        }
+
+                        continue;
+                    }
+
+                    await sendTelegramMessage(
+                        chatId,
+                        "❌ Unknown admin command. Use /admin to see available commands."
+                    );
+
+                    continue;
+                }
+
                 /*
+                 * =========================
+                 * TELEGRAM APPROVAL CHECK
+                 * =========================
+                 *
+                 * Only approved Telegram users
+                 * may use the pairing service.
+                 *
+                 * The owner is always allowed.
+                 */
+
+                if (
+                    message.chat.type === "private" &&
+                    message.from.id !== TELEGRAM_OWNER_ID &&
+                    !isTelegramApproved(message.from.id)
+                ) {
+                    await sendTelegramMessage(
+                        chatId,
+                        `🔒 Access restricted.
+
+Your Telegram account has not been approved yet.
+
+1️⃣ Get your Telegram ID using @ScanIDBot.
+2️⃣ Send your 🆔 Telegram ID to ${TELEGRAM_CONTACT}.
+3️⃣ Wait for approval before using /pair.`
+                    );
+
+                    continue;
+                }
+
+/*
                  * =========================
                  * PAIR
                  * =========================
