@@ -1,4 +1,9 @@
 module.exports = {
+telegram_pair_next:
+    "🇬🇧 English selected.\n\nUse /pair followed by your WhatsApp number to get a pairing code.",
+
+telegram_access_restricted:
+    "🔒 Access restricted.\n\nYour Telegram account has not been approved yet.\n\n1️⃣ Get your Telegram ID using @ScanIDBot.\n2️⃣ Send your 🆔 Telegram ID to @The_whisper237.\n3️⃣ Wait for approval before using /pair.",
     "telegram_logged_out_cleared": '❌ WhatsApp logged out for +{phone}.\n\n🧹 The old session was cleared. You can now use /pair {phone} to link it again.',
     "telegram_linked_start_failed": '❌ WhatsApp was linked successfully, but WhisperBot could not be started for +{phone}.',
     "telegram_linked_success": '✅ WhatsApp account +{phone} is linked successfully.\n\n🚀 WhisperBot is now starting on this WhatsApp account.',

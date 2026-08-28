@@ -1,4 +1,9 @@
 module.exports = {
+telegram_pair_next:
+    "🇫🇷 Français sélectionné.\n\nFais /pair suivi de ton numéro WhatsApp pour obtenir un code d’appairage.",
+
+telegram_access_restricted:
+    "🔒 Accès restreint.\n\nTon compte Telegram n’a pas encore été approuvé.\n\n1️⃣ Obtiens ton identifiant Telegram avec @ScanIDBot.\n2️⃣ Envoie ton 🆔 identifiant Telegram à @The_whisper237.\n3️⃣ Attends l’approbation avant d’utiliser /pair.",
     "telegram_logged_out_cleared": "❌ WhatsApp a été déconnecté pour +{phone}.\n\n🧹 L'ancienne session a été supprimée. Vous pouvez maintenant utiliser /pair {phone} pour le reconnecter.",
     "telegram_linked_start_failed": "❌ Le compte WhatsApp a été lié avec succès, mais WhisperBot n'a pas pu démarrer pour +{phone}.",
     "telegram_linked_success": '✅ Le compte WhatsApp +{phone} est lié avec succès.\n\n🚀 WhisperBot démarre maintenant sur ce compte WhatsApp.',

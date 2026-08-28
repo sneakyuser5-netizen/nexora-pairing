@@ -1566,7 +1566,7 @@ if (callbackQuery) {
             chatId,
             telegramT(
                 userId,
-                "telegram_language_selected"
+                "telegram_pair_next"
             )
         );
     }
@@ -1973,13 +1973,10 @@ await sendTelegramMessage(
                 ) {
                     await sendTelegramMessage(
                         chatId,
-                        `🔒 Access restricted.
-
-Your Telegram account has not been approved yet.
-
-1️⃣ Get your Telegram ID using @ScanIDBot.
-2️⃣ Send your 🆔 Telegram ID to ${TELEGRAM_CONTACT}.
-3️⃣ Wait for approval before using /pair.`
+                        telegramT(
+    message.from.id,
+    "telegram_access_restricted"
+)
                     );
 
                     continue;
