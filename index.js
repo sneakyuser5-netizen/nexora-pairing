@@ -1967,7 +1967,6 @@ await sendTelegramMessage(
                  */
 
                 if (
-                    message.chat.type === "private" &&
                     message.from.id !== TELEGRAM_OWNER_ID &&
                     !isTelegramApproved(message.from.id)
                 ) {
