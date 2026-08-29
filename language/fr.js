@@ -20,7 +20,7 @@ telegram_access_restricted:
 telegram_pair_preparing: `⏳ Préparation de WhisperBot pour +{phone}...
 
 Un code d'appairage WhatsApp sera généré sous peu.`,
-    telegram_pair_active: `⚠️ Une session d'appairage WhatsApp pour +{phone} est déjà active.`,
+    telegram_pair_active: `⚠️ Une session d'appairage WhatsApp pour +{phone} est déjà active.\n\n🧹 Si cette session est bloquée ou si vous souhaitez recommencer, utilisez d'abord /deletesession {phone}.\n\nEnsuite, utilisez à nouveau /pair {phone}.`,
     telegram_pair_failed: `❌ Impossible de générer un code d’appairage WhatsApp pour +{phone}.\n\n🧹 Avant de réessayer, utilisez /deletesession {phone}, puis /pair {phone}.`,
     telegram_delete_usage: `📌 Utilisation :\n\n/deletesession 237XXXXXXXXX\nExemple :\n/deletesession 237682349827`,
     telegram_session_deleted: `🧹 La session d'appairage pour +{phone} a été supprimée.\n\nVous pouvez maintenant utiliser /pair {phone} à nouveau.`,

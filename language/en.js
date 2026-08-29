@@ -20,7 +20,7 @@ telegram_access_restricted:
 telegram_pair_preparing: `⏳ Preparing WhisperBot for +{phone}...
 
 A WhatsApp pairing code will be generated shortly.`,
-    telegram_pair_active: `⚠️ A WhatsApp pairing session for +{phone} is already active.`,
+    telegram_pair_active: `⚠️ A WhatsApp pairing session for +{phone} is already active.\n\n🧹 If this session is stuck or you want to start over, use /deletesession {phone} first.\n\nThen use /pair {phone} again.`,
     telegram_pair_failed: `❌ Unable to generate a WhatsApp pairing code for +{phone}.\n\n🧹 Before trying again, use /deletesession {phone}, then use /pair {phone}.`,
     telegram_delete_usage: `📌 Usage:\n\n/deletesession 237XXXXXXXXX\n\nExample:\n/deletesession 237682349827`,
     telegram_session_deleted: `🧹 Pairing session for +{phone} has been cleared.\n\nYou can now use /pair {phone} again.`,
