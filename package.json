@@ -17,6 +17,7 @@
     "axios": "^1.20.0",
     "dotenv": "^17.4.2",
     "jimp": "^1.6.1",
+    "node-edge-tts": "^1.2.10",
     "openai": "^7.3.0",
     "pino": "latest",
     "qrcode": "^1.5.4",
