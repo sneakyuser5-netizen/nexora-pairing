@@ -6,6 +6,7 @@ const file = path.join(__dirname, "../database/settings.json");
 // Default settings
 const DEFAULTS = {
     "global": {
+        "autoreact": false,
         "autotyping": false,
         "autorecording": false,
         "autoread": false,

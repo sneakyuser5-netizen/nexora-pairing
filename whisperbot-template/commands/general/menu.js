@@ -1,226 +1,444 @@
+const path = require("path");
+const fs = require("fs");
+
 module.exports = {
-    name: "menu",
-    category: "general",
-    description: "Show bot commands",
-    permission: "public",
+name: "menu",
+category: "general",
+description: "✦ The-whisperer_bot • Command Center ✦",
+permission: "public",
 
-    execute: async (sock, msg, args = []) => {
+execute: async (sock, msg, args = []) => {
+    const { t } = require("../../lib/lang");
+    const { commands } = require("../../handler");
+    const settings = require("../../lib/settings");
 
-        const { t } = require("../../lib/lang");
-        const { commands } = require("../../handler");
-        const settings = require("../../lib/settings");
+    const dictionary = require("../../language/source/dictionary");
+    const commandFr = require("../../language/source/command-fr");
 
-        const dictionary = require("../../language/source/dictionary");
-        const commandFr = require("../../language/source/command-fr");
-        const fr = require("../../language/fr");
-        const jid = msg.key.remoteJid;
-        const page = (args[0] || "").toLowerCase();
+    const jid = msg.key.remoteJid;
+    const page = (args[0] || "").toLowerCase().trim();
 
-        const config = settings.get("global");
+    const config = settings.get("global");
+    const { version } = require("../../package.json");
 
-        const lang =
-            config.language === "fr"
-                ? "Français 🇫🇷"
-                : "English 🇬🇧";
+    // ═════════════════════════════════════════════
+    // BASIC INFORMATION
+    // ═════════════════════════════════════════════
 
-        const { version } = require("../../package.json");
-        const seconds = Math.floor(
-            (Date.now() - (global.START_TIME || Date.now())) / 1000
-        );
+    const botName = config.bot_name || "The-whisperer_bot";
+    const prefix = ".";
+    const userName = msg.pushName || "User";
 
-        const hours = Math.floor(seconds / 3600);
-        const minutes = Math.floor((seconds % 3600) / 60);
-        const secs = seconds % 60;
+    const language =
+        config.language === "fr"
+            ? "Français 🇫🇷"
+            : "English 🇬🇧";
 
-        const uptime = `${hours}h ${minutes}m ${secs}s`;
+    // ═════════════════════════════════════════════
+    // MENU IMAGE
+    // ═════════════════════════════════════════════
 
-        const ram = (
-            process.memoryUsage().rss /
-            1024 /
-            1024
-        ).toFixed(1);
+    const menuImage = path.join(
+        __dirname,
+        "../../assets/menu.png"
+    );
 
+    const hasMenuImage = fs.existsSync(menuImage);
 
-        const icons = {
-            admin: "👮",
-            group: "👥",
-            owner: "👑",
-            fun: "🎮",
-            general: "📖",
-            info: "ℹ️",
-            tools: "🛠",
-            other: "📦"
-        };
+    // ═════════════════════════════════════════════
+    // UPTIME
+    // ═════════════════════════════════════════════
 
-        const commandIcons = {
-            admin: "🛡️",
-            group: "👥",
-            owner: "👑",
-            fun: "🎲",
-            general: "📖",
-            info: "ℹ️",
-            tools: "🛠️",
-            other: "📦"
-        };
+    const totalSeconds = Math.floor(
+        (Date.now() - (global.START_TIME || Date.now())) / 1000
+    );
 
-const categoryBanners = {
-    admin: t("menu_banner_admin"),
-    group: t("menu_banner_group"),
-    owner: t("menu_banner_owner"),
-    fun: t("menu_banner_fun"),
-    general: t("menu_banner_general"),
-    info: t("menu_banner_info"),
-    tools: t("menu_banner_tools"),
-    other: t("menu_banner_other")
-};
+    const days = Math.floor(totalSeconds / 86400);
+    const hours = Math.floor((totalSeconds % 86400) / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
 
-        const categories = {};
+    let uptime;
 
-        for (const [name, command] of commands.entries()) {
+    if (days > 0) {
+        uptime = `${days}d ${hours}h ${minutes}m`;
+    } else if (hours > 0) {
+        uptime = `${hours}h ${minutes}m ${seconds}s`;
+    } else if (minutes > 0) {
+        uptime = `${minutes}m ${seconds}s`;
+    } else {
+        uptime = `${seconds}s`;
+    }
 
-            if (name !== command.name) continue;
+    // ═════════════════════════════════════════════
+    // MEMORY
+    // ═════════════════════════════════════════════
 
-            const cat = command.category || "other";
+    const ram = (
+        process.memoryUsage().rss /
+        1024 /
+        1024
+    ).toFixed(1);
 
-            if (!categories[cat]) {
-                categories[cat] = [];
-            }
+    // ═════════════════════════════════════════════
+    // CATEGORY ICONS
+    // ═════════════════════════════════════════════
 
-            categories[cat].push(command);
+    const icons = {
+        admin: "🛡️",
+        group: "👥",
+        owner: "👑",
+        fun: "🎮",
+        general: "📖",
+        info: "💡",
+        tools: "🛠️",
+        media: "🎬",
+        download: "📥",
+        utility: "⚙️",
+        other: "📦"
+    };
+
+    // ═════════════════════════════════════════════
+    // COMMAND ICONS
+    // ═════════════════════════════════════════════
+
+    const commandIcons = {
+        admin: "🔐",
+        group: "👥",
+        owner: "👑",
+        fun: "🎲",
+        general: "📖",
+        info: "💡",
+        tools: "🔧",
+        media: "🎞️",
+        download: "⬇️",
+        utility: "⚙️",
+        other: "›"
+    };
+
+    // ═════════════════════════════════════════════
+    // CATEGORY BANNERS
+    // ═════════════════════════════════════════════
+
+    const categoryBanners = {
+        admin: t("menu_banner_admin"),
+        group: t("menu_banner_group"),
+        owner: t("menu_banner_owner"),
+        fun: t("menu_banner_fun"),
+        general: t("menu_banner_general"),
+        info: t("menu_banner_info"),
+        tools: t("menu_banner_tools"),
+        other: t("menu_banner_other")
+    };
+
+    // ═════════════════════════════════════════════
+    // ORGANIZE COMMANDS
+    // ═════════════════════════════════════════════
+
+    const categories = {};
+
+    for (const [name, command] of commands.entries()) {
+        // Ignore aliases / duplicate registrations
+        if (name !== command.name) continue;
+
+        const category =
+            typeof command.category === "string"
+                ? command.category.toLowerCase()
+                : "other";
+
+        if (!categories[category]) {
+            categories[category] = [];
         }
 
-        if (page && !categories[page]) {
-            return sock.sendMessage(jid, {
-                text:
+        categories[category].push(command);
+    }
 
-`${t("menu_unknown")}
+    // ═════════════════════════════════════════════
+    // PREMIUM CATEGORY ORDER
+    // ═════════════════════════════════════════════
 
-${t("menu_available_pages")}
+    const preferredOrder = [
+        "owner",
+        "admin",
+        "group",
+        "general",
+        "tools",
+        "media",
+        "download",
+        "fun",
+        "info",
+        "utility",
+        "other"
+    ];
 
-👮 admin
-👥 group
-👑 owner
-🎮 fun
-📖 general
-ℹ️ info
-🛠 tools
+    const sortedCategories = Object.keys(categories).sort((a, b) => {
+        const ai = preferredOrder.indexOf(a);
+        const bi = preferredOrder.indexOf(b);
 
-${t("menu_example")}
-.menu admin`
+        if (ai === -1 && bi === -1) {
+            return a.localeCompare(b);
+        }
 
+        if (ai === -1) return 1;
+        if (bi === -1) return -1;
+
+        return ai - bi;
+    });
+
+    const totalCategories = sortedCategories.length;
+
+    const totalCommands = Object.values(categories)
+        .reduce((total, list) => total + list.length, 0);
+
+    // ═════════════════════════════════════════════
+    // PREMIUM DESCRIPTION FORMATTER
+    // ═════════════════════════════════════════════
+
+    const formatDescription = (description) => {
+        if (!description) {
+            return "✦ _No description available_";
+        }
+
+        const cleanDescription = String(description)
+            .replace(/\r?\n/g, " ")
+            .replace(/\s+/g, " ")
+            .trim();
+
+        return `✦ _${cleanDescription}_`;
+    };
+
+    // ═════════════════════════════════════════════
+    // SEND PREMIUM IMAGE + CAPTION
+    // ═════════════════════════════════════════════
+
+    const sendMenu = async (caption) => {
+        if (hasMenuImage) {
+            return await sock.sendMessage(jid, {
+                image: {
+                    url: menuImage
+                },
+                caption
             });
         }
-// ======================================
-// Bot Information
-// ======================================
 
-// uptime
-// RAM
-// language
-// version
-        const botName =
-    config.bot_name || "Whisperer_Bot";
+        return await sock.sendMessage(jid, {
+            text: caption
+        });
+    };
 
-let menu =
-`🤖 *${botName}*
+    // ═════════════════════════════════════════════
+    // UNKNOWN CATEGORY
+    // ═════════════════════════════════════════════
 
-━━━━━━━━━━━━━━━━━━
+    if (page && !categories[page]) {
+        const available = sortedCategories
+            .map(category => {
+                const icon = icons[category] || "📦";
 
-👤 *User:* ${msg.pushName || "User"}
-🌍 *Language:* ${lang}
-⚡ *Prefix:* .
-📦 *Version:* ${version}
-⏱ *Uptime:* ${uptime}
-💾 *RAM:* ${ram} MB
-📚 *Commands:* ${commands.size}`;
-if (!page) {
+                const name =
+                    category.charAt(0).toUpperCase() +
+                    category.slice(1);
 
-    menu += `
+                return `│ ${icon} *${name}*  •  ${categories[category].length}`;
+            })
+            .join("\n");
 
-━━━━━━━━━━━━━━━━━━
+        return await sendMenu(
 
-📂 *${t("menu_categories")}*
+`╭──────────────────────────╮
+│   ❌ PAGE NOT FOUND
+╰──────────────────────────╯
 
-`;
+${t("menu_unknown")}
 
-    Object.keys(categories).forEach(cat => {
+╭━━〔 📂 ${t("menu_available_pages")} 〕━━╮
+${available}
+╰━━━━━━━━━━━━━━━━━━━━━━━━━━╯
 
-        menu += `${icons[cat] || "📦"} *${cat.charAt(0).toUpperCase() + cat.slice(1)}* (${categories[cat].length})\n`;
+💡 ${t("menu_example")}
+╰─ ${prefix}menu admin
 
-    });
-
-    menu += `
-
-━━━━━━━━━━━━━━━━━━
-
-💡 ${
-t("menu_use")
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+✦ ${botName} • v${version}`
+);
 }
 
-*.menu <category>*
+    // ═════════════════════════════════════════════
+    // PREMIUM MAIN HEADER
+    // ═════════════════════════════════════════════
 
-${
-t("menu_examples")
-}
+    let menu =
 
-• .menu admin
-• .menu tools
-• .menu fun`;
+`╭──────────────────────────╮
+│   ✦ ${botName} ✦
+│   Your Ultimate WhatsApp Assistant
+╰──────────────────────────╯
 
-    return await sock.sendMessage(jid, {
-        text: menu
-    });
-}
-const icon = icons[page] || "📦";
-const cmdIcon = commandIcons[page] || "⚙️";
-const banner = categoryBanners[page] || page.toUpperCase();
+╭━━〔 👤 PROFILE 〕━━━━━━━━╮
+│
+│ 👤 User      : ${userName}
+│ 🌐 Language  : ${language}
+│ ⚡ Prefix    : ${prefix}
+│
+╰━━━━━━━━━━━━━━━━━━━━━━━━━╯
 
-menu += `
+╭━━〔 📊 SYSTEM STATUS 〕━━╮
+│
+│ 🟢 Status    : ONLINE
+│ 📦 Version   : ${version}
+│ ⏱️ Uptime    : ${uptime}
+│ 💾 Memory    : ${ram} MB
+│
+╰━━━━━━━━━━━━━━━━━━━━━━━━━╯
 
-━━━━━━━━━━━━━━━━━━
+╭━━〔 📚 COMMAND CENTER 〕╮
+│
+│ ⚡ Commands  : ${totalCommands}
+│ 📂 Categories: ${totalCategories}
+│
+╰━━━━━━━━━━━━━━━━━━━━━━━━━╯`;
 
-${icon} *${banner}*
+    // ═════════════════════════════════════════════
+    // MAIN MENU
+    // ═════════════════════════════════════════════
 
-━━━━━━━━━━━━━━━━━━
+    if (!page) {
+        menu += `
 
-`;
+╭━━〔 ✦ CATEGORIES ✦ 〕━━━╮
+│`;
 
-for (const [index, command] of categories[page].entries()) {
+        for (const category of sortedCategories) {
+            const icon = icons[category] || "📦";
 
-let description =
-    config.language === "fr"
-        ? (commandFr[command.name] || dictionary[command.name] || command.description)
-        : (dictionary[command.name] || command.description);
-    menu += `${cmdIcon} *.${command.name}*\n`;
-    menu += `${description}\n`;
+            const name =
+                category.charAt(0).toUpperCase() +
+                category.slice(1);
 
-    if (index < categories[page].length - 1) {
-        menu += `\n━━━━━━━━━━━━━━━━━━\n\n`;
+            const count = categories[category].length;
+
+            menu += `\n│ ${icon} *${name}*  ›  ${count} commands`;
+        }
+
+        menu += `
+
+│
+╰━━━━━━━━━━━━━━━━━━━━━━━━━━╯
+
+╭━━〔 🚀 QUICK ACCESS 〕━━━━╮
+│
+│ ${prefix}menu owner
+│ ${prefix}menu admin
+│ ${prefix}menu general
+│ ${prefix}menu tools
+│ ${prefix}menu fun
+│
+╰━━━━━━━━━━━━━━━━━━━━━━━━━━╯
+
+╭━━〔 💡 HOW TO USE 〕━━━━━━╮
+│
+│ ${prefix}menu <category>
+│
+│ Example:
+│ ${prefix}menu media
+│
+╰━━━━━━━━━━━━━━━━━━━━━━━━━━╯
+
+╭━━〔 ⚡ THE-WHISPERER_BOT 〕╮
+│
+│ 🚀 Fast
+│ 🛡️ Secure
+│ ⚙️ Smart
+│ 💎 Premium
+│
+╰━━━━━━━━━━━━━━━━━━━━━━━━━━╯
+
+╭──────────────────────────╮
+│ ✦ ${botName} v${version}
+│ Your ultimate command hub.
+╰──────────────────────────╯`;
+
+        return await sendMenu(menu);
     }
-}
 
+    // ═════════════════════════════════════════════
+    // CATEGORY PAGE
+    // ═════════════════════════════════════════════
 
-  
-if (!page) {
+    const icon = icons[page] || "📦";
+    const commandIcon = commandIcons[page] || "›";
+
+    const categoryName =
+        page.charAt(0).toUpperCase() +
+        page.slice(1);
+
+    const banner =
+        categoryBanners[page] ||
+        categoryName;
+
+    const categoryCommands = categories[page];
+
     menu += `
 
-╔════════════════════════════════════╗
-║ 📚 ${t("total_commands")}: ${commands.size}
-║ 🤖 ${botName} v${version}
-╚════════════════════════════════════╝`;
-} else {
-menu += `
+╭━━〔 ${icon} ${banner} 〕━━╮
+│
+│ 📚 Commands : ${categoryCommands.length}
+│ 🔎 Prefix   : ${prefix}
+│
+╰━━━━━━━━━━━━━━━━━━━━━━━━━━╯`;
 
-━━━━━━━━━━━━━━━━━━
+    // ═════════════════════════════════════════════
+    // COMMAND LIST
+    // ═════════════════════════════════════════════
 
-💡 ${
-t("menu_return")
-}`;
+    for (const [index, command] of categoryCommands.entries()) {
+        let description;
+
+        if (config.language === "fr") {
+            description =
+                commandFr[command.name] ||
+                dictionary[command.name] ||
+                command.description;
+        } else {
+            description =
+                dictionary[command.name] ||
+                command.description;
+        }
+
+        const number =
+            String(index + 1).padStart(2, "0");
+
+        const premiumDescription =
+            formatDescription(description);
+
+        menu += `
+
+╭─〔 ${number} 〕
+│ ${commandIcon} ${prefix}${command.name}
+│
+│ ${premiumDescription}
+╰──────────────────────────`;
 }
 
-await sock.sendMessage(jid, {
-    text: menu
-});        
+    // ═════════════════════════════════════════════
+    // CATEGORY FOOTER
+    // ═════════════════════════════════════════════
 
-    }
+    menu += `
+
+╭━━〔 ↩️ NAVIGATION 〕━━━━━━╮
+│
+│ ${prefix}menu
+│ Return to command center
+│
+╰━━━━━━━━━━━━━━━━━━━━━━━━━━╯
+
+╭──────────────────────────╮
+│ ✦ ${botName} • v${version}
+│ Premium WhatsApp Assistant
+╰──────────────────────────╯`;
+
+    return await sendMenu(menu);
+}
+
 };

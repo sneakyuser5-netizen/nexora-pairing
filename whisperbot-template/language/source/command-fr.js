@@ -1,4 +1,17 @@
+
 module.exports = {
+"img": "Générer une image à partir d’un texte",
+"robot": "Lire un texte cité avec une voix robotique",
+"hacker": "Générer une image de style hacker à partir d’un texte",
+
+    "aifilter": 'Active ou désactive le filtre de messages par IA.',
+    "autogoodnight": 'Active ou désactive les réponses automatiques de bonne nuit.',
+autoreact: "Réagir automatiquement aux messages",
+"rd": "Lire le texte d'une image à voix haute",
+"tts": "Convertir du texte en audio",
+"ai": "Activer ou désactiver le chat IA automatique",
+"stk": "Convertir une image en sticker WhatsApp",
+antibot: "Activer ou désactiver la protection anti-bot",
 "facebook": "Télécharger une vidéo Facebook",
 "tiktok": "Télécharger une vidéo TikTok",
 "sticker": "Télécharger un pack de stickers Telegram",

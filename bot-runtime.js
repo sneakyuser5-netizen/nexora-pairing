@@ -1,9 +1,11 @@
 const fs = require("fs");
 const path = require("path");
 const { spawn, execFileSync } = require("child_process");
+
 const {
     syncWhisperBotSource
 } = require("./source-sync");
+
 const TEMPLATE_DIR =
     path.join(__dirname, "whisperbot-template");
 
@@ -19,8 +21,10 @@ if (!fs.existsSync(INSTANCES_DIR)) {
 /*
  * Start an isolated WhisperBot instance.
  *
- * Every WhatsApp account gets its own
- * complete WhisperBot directory.
+ * Every NEW WhatsApp account receives a fresh,
+ * complete copy of the latest main bot repository.
+ *
+ * Existing instances are NEVER overwritten here.
  */
 function startWhisperBot(phone) {
 
@@ -30,20 +34,26 @@ function startWhisperBot(phone) {
             phone
         );
 
-       /*
-     * Always obtain the latest WhisperBot
-     * source before creating a new instance.
+    /*
+     * =========================
+     * NEW INSTANCE
+     * =========================
      */
+
     if (!fs.existsSync(instanceDir)) {
 
         console.log(
-            `🔄 Syncing latest WhisperBot source before creating +${phone}`
+            `🔄 Getting latest WhisperBot source for +${phone}`
         );
 
+        /*
+         * The GitHub repository is the single
+         * source of truth.
+         */
         syncWhisperBotSource();
 
         console.log(
-            `Creating WhisperBot instance for ${phone}`
+            `📦 Creating complete WhisperBot instance for +${phone}`
         );
 
         fs.cpSync(
@@ -55,8 +65,7 @@ function startWhisperBot(phone) {
         );
 
         /*
-         * Never copy the template's
-         * authentication/database state.
+         * Never copy authentication from template.
          */
         fs.rmSync(
             path.join(
@@ -69,6 +78,9 @@ function startWhisperBot(phone) {
             }
         );
 
+        /*
+         * Never copy database from template.
+         */
         fs.rmSync(
             path.join(
                 instanceDir,
@@ -80,6 +92,9 @@ function startWhisperBot(phone) {
             }
         );
 
+        /*
+         * Create fresh instance database.
+         */
         fs.mkdirSync(
             path.join(
                 instanceDir,
@@ -89,55 +104,84 @@ function startWhisperBot(phone) {
                 recursive: true
             }
         );
-console.log(
-    `📦 Installing dependencies for +${phone}...`
-);
 
-execFileSync(
-    "npm",
-    [
-        "install",
-        "--omit=dev"
-    ],
-    {
-        cwd: instanceDir,
-        stdio: "inherit"
-    }
-);
+        /*
+         * Create fresh instance session.
+         */
+        fs.mkdirSync(
+            path.join(
+                instanceDir,
+                "session"
+            ),
+            {
+                recursive: true
+            }
+        );
 
-console.log(
-    `✅ Dependencies installed for +${phone}`
-);
+        /*
+         * Install EVERYTHING required by the
+         * freshly downloaded main bot.
+         *
+         * package.json comes directly from GitHub.
+         */
+        console.log(
+            `📦 Installing dependencies for +${phone}...`
+        );
+
+        execFileSync(
+            "npm",
+            [
+                "install",
+                "--omit=dev"
+            ],
+            {
+                cwd: instanceDir,
+                stdio: "inherit"
+            }
+        );
+
+        console.log(
+            `✅ Dependencies installed for +${phone}`
+        );
     }
 
     /*
-     * Each instance gets its own
-     * WhatsApp authentication directory.
+     * =========================
+     * EXISTING INSTANCE
+     * =========================
+     *
+     * Do NOT replace its source.
+     * Do NOT reinstall dependencies.
+     * Do NOT touch its database.
+     * Do NOT touch its authentication.
      */
+
     const sessionDir =
         path.join(
             instanceDir,
             "session"
         );
-/*
- * The child WhisperBot writes this marker when WhatsApp
- * reports DisconnectReason.loggedOut (401).
- *
- * Keep it OUTSIDE the session directory because the
- * session directory itself is deleted on logout.
- */
-const logoutMarker =
-    path.join(
-        instanceDir,
-        ".whisperbot-logged-out"
-    );
 
-try {
-    fs.rmSync(
-        logoutMarker,
-        { force: true }
-    );
-} catch {}
+    /*
+     * Marker used by the child bot when
+     * WhatsApp reports loggedOut / 401.
+     *
+     * Keep outside session/.
+     */
+    const logoutMarker =
+        path.join(
+            instanceDir,
+            ".whisperbot-logged-out"
+        );
+
+    try {
+        fs.rmSync(
+            logoutMarker,
+            {
+                force: true
+            }
+        );
+    } catch {}
 
     fs.mkdirSync(
         sessionDir,
@@ -147,21 +191,21 @@ try {
     );
 
     /*
-     * Tell the WhisperBot which
-     * WhatsApp authentication directory
-     * belongs to this instance.
+     * Pass instance-specific information
+     * to the real WhisperBot.
      */
     const env = {
-    ...process.env,
+        ...process.env,
 
-    WHISPERBOT_PHONE: phone,
+        WHISPERBOT_PHONE:
+            phone,
 
-    WHISPERBOT_SESSION_DIR:
-        sessionDir,
+        WHISPERBOT_SESSION_DIR:
+            sessionDir,
 
-    WHISPERBOT_LOGOUT_MARKER:
-        logoutMarker
-};
+        WHISPERBOT_LOGOUT_MARKER:
+            logoutMarker
+    };
 
     console.log(
         `🚀 Starting WhisperBot instance for +${phone}`

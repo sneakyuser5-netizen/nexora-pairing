@@ -86,3 +86,9 @@ telegram_session.session-journal
 
 # Runtime database
 database/*.json
+
+# WhisperBot persistent AI memory
+.whisperer-memory/
+database/*.json
+session/
+media/
