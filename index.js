@@ -1,3 +1,16 @@
+const http = require('http');
+
+const PORT = process.env.PORT || 3000;
+
+const healthServer = http.createServer((req, res) => {
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    res.end('WhisperBot Pairing Service is alive');
+});
+
+healthServer.listen(PORT, '0.0.0.0', () => {
+    console.log(`🌐 Health server listening on port ${PORT}`);
+});
+
 // https://github.com/sneakyuser5-netizen/whisperbot-pairing/blob/fix/pairing-auth-detection/index.js
 require("dotenv").config();
 
