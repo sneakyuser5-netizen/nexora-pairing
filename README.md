@@ -1,59 +1,119 @@
-# whisperbot-pairing
+# Nexora Pairing
 
-A JavaScript project for collaborative pair programming.
+A JavaScript-based WhatsApp pairing service that provisions isolated WhisperBot instances, manages Telegram approval flow, and generates fresh pairing codes for users.
 
-## Overview
+## Repository snapshot
 
-This repository is designed to facilitate code pairing sessions, enabling developers to collaborate effectively on JavaScript projects.
+- Repository: `sneakyuser5-netizen/nexora-pairing`
+- Default branch: `main`
+- Primary language: JavaScript
+- Visibility: Public
+- Archived: No
+- Open issues: 0
+- Forks: 0
+- Stars: 0
+- Watchers: 0
+- Repository size: ~1,894 KB
+- Last push: 2026-10-20T22:33:46Z
 
-## Features
+## What this repo does
 
-- Real-time code collaboration
-- Pair programming support
-- JavaScript-focused development
+This project acts as a pairing orchestration layer for WhisperBot instances:
 
-## Getting Started
+- Starts a health server on port `3000`
+- Maintains per-phone isolated instance directories under `instances/`
+- Syncs the latest WhisperBot template from `whisperbot-template/`
+- Creates WhatsApp auth/session storage for each pairing request
+- Generates and manages new WhatsApp pairing codes via Telegram-triggered flows
+- Uses Telegram as the control plane for user approval, pairing requests, and admin actions
+- Validates and clears stale sessions when pairing fails or the bot logs out
+
+## Project structure
+
+```text
+.
+├── .env
+├── .gitignore
+├── README.md
+├── bot-runtime.js
+├── index.js
+├── language.js
+├── package.json
+├── source-sync.js
+├── telegram-approvals.js
+├── database/
+├── instances/
+├── language/
+├── whisperbot-template/
+└── .whisperbot-template-sync.json
+```
+
+## Core files
+
+- `index.js` — Telegram bot, pairing orchestration, WhatsApp lifecycle, reconnect logic
+- `bot-runtime.js` — starts child WhisperBot runtime processes
+- `source-sync.js` — copies/syncs the latest template into isolated instances
+- `language.js` — Telegram language helpers and message translation
+- `telegram-approvals.js` — approved Telegram user management
+- `whisperbot-template/` — reusable WhisperBot source template used for fresh bot instances
+
+## Runtime behavior
+
+The service is designed around a pair-and-launch flow:
+
+1. A user sends `/pair <phone>` in Telegram.
+2. The repo validates the target phone and prepares an isolated instance.
+3. It creates a temporary WhatsApp socket and requests a pairing code.
+4. The user completes pairing in WhatsApp.
+5. Once linked, the project launches the real WhisperBot instance for that phone.
+6. Stale sessions are cleaned automatically on logout, timeout, or invalid session reuse.
+
+## Tech stack
+
+- Node.js
+- JavaScript (CommonJS)
+- Baileys (`@whiskeysockets/baileys`)
+- Telegram Bot API
+- dotenv
+- pino logging
+- QR/pairing code flow for WhatsApp
+
+## Notes
+
+- The repo currently has no open issues.
+- There are no public forks, stars, or watchers at the moment.
+- The project is configured around a public pairing service model and uses Telegram approvals to restrict access.
+
+## Getting started
 
 ### Prerequisites
 
-- Node.js (recommended version 14+)
-- npm or yarn package manager
+- Node.js 18+
+- npm
+- A Telegram bot token in `.env` via `TELEGRAM_BOT_TOKEN`
 
-### Installation
+### Install
 
 ```bash
 npm install
 ```
 
-### Usage
+### Run
 
 ```bash
 npm start
 ```
 
-## Development
+### Required environment variable
 
-This project is built with JavaScript. To contribute or extend functionality:
-
-1. Clone the repository
-2. Install dependencies
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
-
-## Technologies
-
-- **Language**: JavaScript
-- **Type**: Pair Programming Tool
+```env
+TELEGRAM_BOT_TOKEN=your_telegram_bot_token_here
+```
 
 ## License
 
-Please refer to the LICENSE file for licensing information.
+No explicit license file is currently present in the repository root, so licensing status should be confirmed before production redistribution or public reuse.
 
-## Contributing
+## Maintainer
 
-Contributions are welcome! Please feel free to submit issues and pull requests.
-
-## Support
-
-For questions or issues, please open an issue in the repository.
+This repository is currently maintained under the GitHub account `sneakyuser5-netizen`.
