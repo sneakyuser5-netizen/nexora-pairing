@@ -236,6 +236,30 @@ function prepareInstance(phone) {
         );
 
         /*
+         * Install dependencies inside the instance.
+         * This must happen here because bot-runtime.js
+         * sees the newly created directory afterward.
+         */
+        console.log(
+            `📦 Installing Nexora dependencies for +${phone}...`
+        );
+
+        const { execFileSync } = require("child_process");
+
+        execFileSync(
+            "npm",
+            ["install", "--omit=dev"],
+            {
+                cwd: instanceDir,
+                stdio: "inherit"
+            }
+        );
+
+        console.log(
+            `✅ Nexora dependencies installed for +${phone}`
+        );
+
+        /*
          * The template must never bring
          * authentication or database data
          * into a new user's instance.

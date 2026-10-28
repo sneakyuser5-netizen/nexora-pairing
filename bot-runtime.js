@@ -145,6 +145,21 @@ function startWhisperBot(phone) {
         );
     }
 
+    /*
+     * Refuse to launch an instance whose required
+     * Facebook media dependency is missing.
+     */
+    try {
+        require.resolve("btch-downloader", {
+            paths: [instanceDir]
+        });
+    } catch (error) {
+        throw new Error(
+            `Required dependency btch-downloader is missing for +${phone}. ` +
+            `Check the instance installation in ${instanceDir}.`
+        );
+    }
+
     const sessionDir =
         path.join(
             instanceDir,

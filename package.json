@@ -15,6 +15,7 @@
     "@vitalets/google-translate-api": "^9.2.1",
     "@whiskeysockets/baileys": "7.0.0-rc14",
     "axios": "^1.20.0",
+    "btch-downloader": "6.4.0",
     "dotenv": "^17.4.2",
     "jimp": "^1.6.1",
     "node-edge-tts": "^1.2.10",
