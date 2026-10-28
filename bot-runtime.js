@@ -118,31 +118,6 @@ function startWhisperBot(phone) {
             }
         );
 
-        /*
-         * Install EVERYTHING required by the
-         * freshly downloaded main bot.
-         *
-         * package.json comes directly from GitHub.
-         */
-        console.log(
-            `📦 Installing dependencies for +${phone}...`
-        );
-
-        execFileSync(
-            "npm",
-            [
-                "install",
-                "--omit=dev"
-            ],
-            {
-                cwd: instanceDir,
-                stdio: "inherit"
-            }
-        );
-
-        console.log(
-            `✅ Dependencies installed for +${phone}`
-        );
     }
 
     /*
