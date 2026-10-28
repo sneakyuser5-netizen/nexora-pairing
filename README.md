@@ -1,6 +1,6 @@
 # Nexora Pairing
 
-A JavaScript-based WhatsApp pairing service that provisions isolated WhisperBot instances, manages Telegram approval flow, and generates fresh pairing codes for users.
+A JavaScript-based WhatsApp pairing service that provisions isolated Nexora instances, manages Telegram approval flow, and generates fresh pairing codes for users.
 
 ## Repository snapshot
 
@@ -18,11 +18,11 @@ A JavaScript-based WhatsApp pairing service that provisions isolated WhisperBot 
 
 ## What this repo does
 
-This project acts as a pairing orchestration layer for WhisperBot instances:
+This project acts as a pairing orchestration layer for Nexora instances:
 
 - Starts a health server on port `3000`
 - Maintains per-phone isolated instance directories under `instances/`
-- Syncs the latest WhisperBot template from `whisperbot-template/`
+- Syncs the latest Nexora template from `whisperbot-template/`
 - Creates WhatsApp auth/session storage for each pairing request
 - Generates and manages new WhatsApp pairing codes via Telegram-triggered flows
 - Uses Telegram as the control plane for user approval, pairing requests, and admin actions
@@ -51,11 +51,11 @@ This project acts as a pairing orchestration layer for WhisperBot instances:
 ## Core files
 
 - `index.js` — Telegram bot, pairing orchestration, WhatsApp lifecycle, reconnect logic
-- `bot-runtime.js` — starts child WhisperBot runtime processes
+- `bot-runtime.js` — starts child Nexora runtime processes
 - `source-sync.js` — copies/syncs the latest template into isolated instances
 - `language.js` — Telegram language helpers and message translation
 - `telegram-approvals.js` — approved Telegram user management
-- `whisperbot-template/` — reusable WhisperBot source template used for fresh bot instances
+- `whisperbot-template/` — reusable Nexora source template used for fresh bot instances
 
 ## Runtime behavior
 
@@ -65,7 +65,7 @@ The service is designed around a pair-and-launch flow:
 2. The repo validates the target phone and prepares an isolated instance.
 3. It creates a temporary WhatsApp socket and requests a pairing code.
 4. The user completes pairing in WhatsApp.
-5. Once linked, the project launches the real WhisperBot instance for that phone.
+5. Once linked, the project launches the real Nexora instance for that phone.
 6. Stale sessions are cleaned automatically on logout, timeout, or invalid session reuse.
 
 ## Tech stack

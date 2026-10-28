@@ -4,7 +4,7 @@ const PORT = process.env.PORT || 3000;
 
 const healthServer = http.createServer((req, res) => {
     res.writeHead(200, { 'Content-Type': 'text/plain' });
-    res.end('WhisperBot Pairing Service is alive');
+    res.end('Nexora Pairing Service is alive');
 });
 
 healthServer.listen(PORT, '0.0.0.0', () => {
@@ -84,7 +84,7 @@ if (!fs.existsSync(INSTANCES_DIR)) {
 const sessions = new Map();
 
 /*
- * phone -> child WhisperBot process
+ * phone -> child Nexora process
  */
 
 const botProcesses = new Map();
@@ -206,7 +206,7 @@ function prepareInstance(phone) {
     if (!fs.existsSync(TEMPLATE_DIR)) {
 
         throw new Error(
-            `WhisperBot template not found: ${TEMPLATE_DIR}`
+            `Nexora template not found: ${TEMPLATE_DIR}`
         );
     }
 
@@ -218,13 +218,13 @@ function prepareInstance(phone) {
     if (!fs.existsSync(instanceDir)) {
 
         console.log(
-            `🔄 Syncing latest WhisperBot source before creating +${phone}`
+            `🔄 Syncing latest Nexora source before creating +${phone}`
         );
 
         syncWhisperBotSource();
 
         console.log(
-            `📦 Creating WhisperBot instance for +${phone}`
+            `📦 Creating Nexora instance for +${phone}`
         );
 
         fs.cpSync(
@@ -323,14 +323,14 @@ function launchWhisperBot(
     ) {
 
         console.log(
-            `ℹ️ WhisperBot instance already running for +${phone}`
+            `ℹ️ Nexora instance already running for +${phone}`
         );
 
         return existing;
     }
 
     console.log(
-        `🚀 Launching WhisperBot for +${phone}`
+        `🚀 Launching Nexora for +${phone}`
     );
 
     const child =
@@ -349,7 +349,7 @@ function launchWhisperBot(
         ) => {
 
             /*
-             * Check whether the WhisperBot child
+             * Check whether the Nexora child
              * reported a real WhatsApp logout.
              *
              * The child writes this marker when
@@ -385,7 +385,7 @@ function launchWhisperBot(
             }
 
             console.log(
-                `WhisperBot +${phone} stopped. code=${code} signal=${signal}`
+                `Nexora +${phone} stopped. code=${code} signal=${signal}`
             );
 
             /*
@@ -399,7 +399,7 @@ function launchWhisperBot(
             ) {
 
                 console.log(
-                    `🧹 WhisperBot reported WhatsApp logout for +${phone}`
+                    `🧹 Nexora reported WhatsApp logout for +${phone}`
                 );
 
                 /*
@@ -498,7 +498,7 @@ try {
                     await sendTelegramMessage(
                         chatId,
 
-                        `⚠️ WhisperBot instance for +${phone} stopped unexpectedly.`
+                        `⚠️ Nexora instance for +${phone} stopped unexpectedly.`
                     );
 
                 } catch {}
@@ -521,7 +521,7 @@ async function createWhatsAppSocket(
      * IMPORTANT:
      *
      * Authentication is stored directly
-     * inside the final WhisperBot instance.
+     * inside the final Nexora instance.
      *
      * There is no intermediate copy.
      */
@@ -546,7 +546,7 @@ async function createWhatsAppSocket(
     /*
      * Create the socket using the SAME
      * basic configuration as the working
-     * WhisperBot.
+     * Nexora.
      */
 
     const sock =
@@ -634,7 +634,7 @@ async function createWhatsAppSocket(
                             );
                         } catch (err) {
                             console.error(
-                                `WhisperBot launch error for +${phone}:`,
+                                `Nexora launch error for +${phone}:`,
                                 err
                             );
 
@@ -746,7 +746,7 @@ async function createWhatsAppSocket(
                     true;
 
                 /*
-                 * Stop the real WhisperBot process
+                 * Stop the real Nexora process
                  * if it is still running.
                  */
 
@@ -783,7 +783,7 @@ async function createWhatsAppSocket(
                     }
 
                     console.log(
-                        `🛑 Stopped WhisperBot process for +${phone}`
+                        `🛑 Stopped Nexora process for +${phone}`
                     );
                 }
 
@@ -844,7 +844,7 @@ async function createWhatsAppSocket(
             }
 
             /*
-             * If the real WhisperBot is already running,
+             * If the real Nexora is already running,
              * the temporary pairing socket closing is expected.
              *
              * This MUST come AFTER the 401 check above.
@@ -855,7 +855,7 @@ async function createWhatsAppSocket(
             ) {
 
                 console.log(
-                    `Pairing socket closed after WhisperBot launch for +${phone}`
+                    `Pairing socket closed after Nexora launch for +${phone}`
                 );
 
                 return;
@@ -1001,7 +1001,7 @@ async function reconnectWhatsApp(
 
     /*
      * Never reconnect after the real
-     * WhisperBot has already started.
+     * Nexora has already started.
      */
 
     if (
@@ -1375,7 +1375,7 @@ if (
  * a short moment to establish before requesting
  * the pairing code.
  *
- * This matches the working WhisperBot template,
+ * This matches the working Nexora template,
  * which waits 4 seconds before calling
  * requestPairingCode().
  */
@@ -1606,7 +1606,7 @@ const text =
  * =========================
  *
  * Private users must be members of
- * WhisperBotOfficial before using
+ * NexoraOfficial before using
  * the pairing service.
  */
 
@@ -1710,7 +1710,7 @@ if (
  * /deletesession 237XXXXXXXXX
  *
  * This removes only the pairing/authentication
- * state. It does NOT stop a running WhisperBot.
+ * state. It does NOT stop a running Nexora.
  */
 
 if (
@@ -2030,7 +2030,7 @@ await sendTelegramMessage(
 
                     /*
                      * Don't allow an existing
-                     * WhisperBot to be paired
+                     * Nexora to be paired
                      * again accidentally.
                      */
 
@@ -2126,14 +2126,14 @@ async function main() {
     );
 
     console.log(
-        "🤖 WhisperBot Pairing Service"
+        "🤖 Nexora Pairing Service"
     );
 
     console.log(
         "================================"
     );
     console.log(
-        "🔄 Synchronizing WhisperBot source..."
+        "🔄 Synchronizing Nexora source..."
     );
 
     syncWhisperBotSource();
@@ -2189,7 +2189,7 @@ async function shutdown(
     }
 
     /*
-     * Don't kill the actual WhisperBot
+     * Don't kill the actual Nexora
      * processes here unless explicitly
      * requested. They are independent
      * runtime processes.

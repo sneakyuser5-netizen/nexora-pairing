@@ -19,7 +19,7 @@ if (!fs.existsSync(INSTANCES_DIR)) {
 }
 
 /*
- * Start an isolated WhisperBot instance.
+ * Start an isolated Nexora instance.
  *
  * Every NEW WhatsApp account receives a fresh,
  * complete copy of the latest main bot repository.
@@ -43,7 +43,7 @@ function startWhisperBot(phone) {
     if (!fs.existsSync(instanceDir)) {
 
         console.log(
-            `🔄 Getting latest WhisperBot source for +${phone}`
+            `🔄 Getting latest Nexora source for +${phone}`
         );
 
         /*
@@ -53,7 +53,7 @@ function startWhisperBot(phone) {
         syncWhisperBotSource();
 
         console.log(
-            `📦 Creating complete WhisperBot instance for +${phone}`
+            `📦 Creating complete Nexora instance for +${phone}`
         );
 
         fs.cpSync(
@@ -232,7 +232,7 @@ function startWhisperBot(phone) {
 
     /*
      * Pass instance-specific information
-     * to the real WhisperBot.
+     * to the real Nexora.
      */
     const env = {
         ...process.env,
@@ -248,7 +248,7 @@ function startWhisperBot(phone) {
     };
 
     console.log(
-        `🚀 Starting WhisperBot instance for +${phone}`
+        `🚀 Starting Nexora instance for +${phone}`
     );
 
     const child =
@@ -271,7 +271,7 @@ function startWhisperBot(phone) {
         () => {
 
             console.log(
-                `✅ WhisperBot process started for +${phone} (PID ${child.pid})`
+                `✅ Nexora process started for +${phone} (PID ${child.pid})`
             );
 
         }
@@ -282,7 +282,7 @@ function startWhisperBot(phone) {
         (code, signal) => {
 
             console.log(
-                `WhisperBot instance +${phone} stopped. code=${code} signal=${signal}`
+                `Nexora instance +${phone} stopped. code=${code} signal=${signal}`
             );
 
         }
@@ -293,7 +293,7 @@ function startWhisperBot(phone) {
         err => {
 
             console.error(
-                `WhisperBot process error for +${phone}:`,
+                `Nexora process error for +${phone}:`,
                 err
             );
 
