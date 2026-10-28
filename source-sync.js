@@ -9,7 +9,7 @@ const TEMPLATE_DIR =
     path.join(ROOT_DIR, "whisperbot-template");
 
 const REPO_URL =
-    "https://github.com/sneakyuser5-netizen/The_whisperer_bot.git";
+    "https://github.com/sneakyuser5-netizen/nexora.git";
 
 function runGit(args, cwd) {
     return execFileSync(
@@ -25,25 +25,25 @@ function runGit(args, cwd) {
 function syncWhisperBotSource() {
 
     console.log("================================");
-    console.log("🔄 SYNCING WHISPERBOT SOURCE");
+    console.log("🔄 SYNCING NEXORA SOURCE");
     console.log("================================");
 
     const tempDir = fs.mkdtempSync(
-        path.join(os.tmpdir(), "whisperbot-source-")
+        path.join(os.tmpdir(), "noxera-source-")
     );
 
     try {
 
         /*
          * Always obtain a completely fresh copy of
-         * The_whisperer_bot.
+         * Noxera.
          *
-         * whisperbot-template is intentionally NOT
+         * noxera bot-template is intentionally NOT
          * a Git repository.
          */
 
         console.log(
-            "📥 Downloading latest The_whisperer_bot..."
+            "📥 Downloading latest nexora..."
         );
 
         runGit(
@@ -127,7 +127,7 @@ function syncWhisperBotSource() {
         );
 
         console.log(
-            "✅ WhisperBot source synchronized from The_whisperer_bot."
+            "✅ noxera source synchronized from nexora."
         );
 
         return TEMPLATE_DIR;
@@ -135,7 +135,7 @@ function syncWhisperBotSource() {
     } catch (error) {
 
         console.error(
-            "❌ WhisperBot source synchronization failed:"
+            "❌ noxora source synchronization failed:"
         );
 
         console.error(error.message);
