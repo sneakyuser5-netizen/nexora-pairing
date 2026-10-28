@@ -145,57 +145,6 @@ function startWhisperBot(phone) {
         );
     }
 
-    /*
-     * Repair the specific missing dependency without
-     * replacing the instance source or session.
-     */
-    try {
-        require.resolve("btch-downloader", {
-            paths: [instanceDir]
-        });
-    } catch {
-        console.log(
-            `📦 Installing missing btch-downloader for +${phone}...`
-        );
-
-        execFileSync(
-            "npm",
-            [
-                "install",
-                "--omit=dev",
-                "btch-downloader@^6.4.0"
-            ],
-            {
-                cwd: instanceDir,
-                stdio: "inherit"
-            }
-        );
-    }
-
-    const mediaDependency = path.join(
-        instanceDir,
-        "node_modules",
-        "btch-downloader"
-    );
-
-    if (!fs.existsSync(mediaDependency)) {
-        console.log(`📦 Installing missing btch-downloader for +${phone}...`);
-
-        execFileSync(
-            "npm",
-            [
-                "install",
-                "--omit=dev",
-                "--no-save",
-                "btch-downloader@6.4.0"
-            ],
-            {
-                cwd: instanceDir,
-                stdio: "inherit"
-            }
-        );
-    }
-
     const sessionDir =
         path.join(
             instanceDir,
