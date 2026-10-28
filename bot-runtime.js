@@ -146,15 +146,31 @@ function startWhisperBot(phone) {
     }
 
     /*
-     * =========================
-     * EXISTING INSTANCE
-     * =========================
-     *
-     * Do NOT replace its source.
-     * Do NOT reinstall dependencies.
-     * Do NOT touch its database.
-     * Do NOT touch its authentication.
+     * Repair the specific missing dependency without
+     * replacing the instance source or session.
      */
+    try {
+        require.resolve("btch-downloader", {
+            paths: [instanceDir]
+        });
+    } catch {
+        console.log(
+            `📦 Installing missing btch-downloader for +${phone}...`
+        );
+
+        execFileSync(
+            "npm",
+            [
+                "install",
+                "--omit=dev",
+                "btch-downloader@^6.4.0"
+            ],
+            {
+                cwd: instanceDir,
+                stdio: "inherit"
+            }
+        );
+    }
 
     const sessionDir =
         path.join(
