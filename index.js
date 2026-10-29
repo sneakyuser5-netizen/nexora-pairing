@@ -1528,7 +1528,13 @@ async function pollTelegram() {
                         offset:
                             telegramOffset,
 
-                        timeout: 30
+                        timeout: 30,
+
+                        allowed_updates: [
+                            "message",
+                            "callback_query",
+                            "inline_query"
+                        ]
                     }
                 );
 
@@ -1539,6 +1545,85 @@ async function pollTelegram() {
 
                 telegramOffset =
                     update.update_id + 1;
+
+/*
+ * =========================
+ * INLINE_QUERY_HANDLER
+ * =========================
+ */
+const inlineQuery = update.inline_query;
+
+if (inlineQuery) {
+    const query = (inlineQuery.query || "").trim().toLowerCase();
+
+    const helpResults = [
+        {
+            id: "start",
+            title: "🚀 Start Nexora Pairing",
+            description: "Open the bot and choose your language.",
+            keywords: "start language english french",
+            message: "Nexora Pairing\n\nSend /start to open the bot and choose English or French."
+        },
+        {
+            id: "pair",
+            title: "📱 Pair a WhatsApp Number",
+            description: "Learn how to link your WhatsApp account.",
+            keywords: "pair phone whatsapp link connect pairing code",
+            message: "Pair WhatsApp with Nexora\n\n1. Open @whisperbot_pairing_bot.\n2. Send /pair followed by your phone number, including country code.\n3. Follow the pairing instructions from the bot.\n\nExample: /pair 237XXXXXXXXX\n\nKeep your pairing code private."
+        },
+        {
+            id: "deletesession",
+            title: "🧹 Delete a Pairing Session",
+            description: "Help for /deletesession.",
+            keywords: "delete session reset remove stuck pairing",
+            message: "Delete a Nexora pairing session\n\nUse /deletesession followed by the phone number to remove its saved pairing state.\n\nA running Nexora process cannot have its session deleted with this command."
+        },
+        {
+            id: "join",
+            title: "👥 Join the Required Group",
+            description: "Learn why group membership may be required.",
+            keywords: "join group membership required access",
+            message: "Nexora Pairing Access\n\nIf the pairing bot asks you to join its required Telegram group, use the join button in the bot's private chat, join the group, and then try again."
+        },
+        {
+            id: "help",
+            title: "ℹ️ Nexora Pairing Help",
+            description: "Overview of the pairing bot.",
+            keywords: "help commands guide nexora pairing",
+            message: "Nexora Pairing Help\n\n/start — Open the bot and choose your language.\n/pair <phone> — Begin WhatsApp pairing.\n/deletesession <phone> — Remove a saved pairing session when no process is running.\n\nOpen @whisperbot_pairing_bot in a private chat to use these commands."
+        }
+    ];
+
+    const matches = helpResults.filter(item =>
+        !query ||
+        (item.title + " " + item.description + " " + item.keywords)
+            .toLowerCase()
+            .includes(query)
+    );
+
+    const results = matches.slice(0, 10).map(item => ({
+        type: "article",
+        id: item.id,
+        title: item.title,
+        description: item.description,
+        input_message_content: {
+            message_text: item.message
+        }
+    }));
+
+    try {
+        await telegram("answerInlineQuery", {
+            inline_query_id: inlineQuery.id,
+            results,
+            cache_time: 1,
+            is_personal: true
+        });
+    } catch (err) {
+        console.error("Inline query response failed:", err.message);
+    }
+
+    continue;
+}
 
 const callbackQuery =
     update.callback_query;
